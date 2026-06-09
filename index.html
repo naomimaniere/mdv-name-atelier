@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MDV — Name Atelier</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500&family=Hanken+Grotesk:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBFAF7; --paper-2:#F2EFE8; --ink:#171513; --ink-soft:#5C564E;
+    --line:#D8D2C6; --oxblood:#7A2E2E; --tag:#EDE8DC; --invent:#9A7B3F;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:"Hanken Grotesk",system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased; line-height:1.5;
+    min-height:100vh;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:40px 28px 80px}
+
+  header{display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:1px solid var(--ink);padding-bottom:18px;margin-bottom:34px;gap:20px;flex-wrap:wrap}
+  .brand{display:flex;flex-direction:column;gap:2px}
+  .brand .mark{font-family:"Space Mono",monospace;font-size:12px;letter-spacing:.32em;color:var(--oxblood)}
+  .brand h1{font-family:"Fraunces",serif;font-weight:400;font-size:clamp(30px,5vw,46px);margin:0;line-height:.98}
+  .brand .sub{font-size:13px;color:var(--ink-soft);max-width:46ch;margin-top:6px}
+  header .meta{font-family:"Space Mono",monospace;font-size:11px;color:var(--ink-soft);text-align:right;letter-spacing:.04em}
+
+  .layout{display:grid;grid-template-columns:300px 1fr;gap:44px;align-items:start}
+  @media(max-width:820px){.layout{grid-template-columns:1fr;gap:30px}}
+
+  /* control rail */
+  .rail label.field{display:block;margin-bottom:22px}
+  .rail .ftag{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.18em;
+    text-transform:uppercase;color:var(--ink-soft);display:block;margin-bottom:9px}
+  .seg{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+  .seg button{font-family:"Hanken Grotesk";font-size:14px;padding:11px 8px;background:transparent;
+    border:1px solid var(--line);color:var(--ink);cursor:pointer;transition:.12s;border-radius:0;text-align:left}
+  .seg button .code{font-family:"Space Mono",monospace;font-size:10px;color:var(--ink-soft);display:block;margin-top:2px}
+  .seg button:hover{border-color:var(--ink)}
+  .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .seg button[aria-pressed="true"] .code{color:var(--paper)}
+  .countrow{display:flex;border:1px solid var(--line)}
+  .countrow input{flex:1;border:0;background:transparent;font-family:"Space Mono",monospace;
+    font-size:18px;padding:11px 14px;color:var(--ink);width:100%}
+  .countrow input:focus{outline:none}
+  .countrow .step{width:42px;border:0;border-left:1px solid var(--line);background:var(--paper-2);
+    font-size:18px;cursor:pointer;color:var(--ink)}
+  .gen{width:100%;margin-top:6px;background:var(--oxblood);color:var(--paper);border:0;
+    font-family:"Hanken Grotesk";font-weight:600;font-size:15px;letter-spacing:.02em;
+    padding:15px;cursor:pointer;transition:.15s}
+  .gen:hover{background:#601f1f}
+  .gen:disabled{opacity:.5;cursor:wait}
+  .rule{margin-top:26px;padding-top:18px;border-top:1px solid var(--line);font-size:12px;color:var(--ink-soft);line-height:1.65}
+  .rule b{color:var(--ink);font-weight:600}
+
+  /* results */
+  .resbar{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:18px;
+    border-bottom:1px solid var(--line);padding-bottom:12px;gap:12px;flex-wrap:wrap}
+  .resbar .summary{font-family:"Space Mono",monospace;font-size:12px;color:var(--ink-soft);letter-spacing:.03em}
+  .resbar .summary .n{color:var(--ink)} .resbar .summary .inv{color:var(--invent)}
+  .acts{display:flex;gap:8px}
+  .acts button{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;
+    background:transparent;border:1px solid var(--line);padding:8px 13px;cursor:pointer;color:var(--ink);transition:.12s}
+  .acts button:hover{border-color:var(--ink)}
+  .pickhint{font-size:12px;color:var(--ink-soft);margin:-4px 0 18px;line-height:1.55}
+  .pickhint b{color:var(--ink);font-weight:600}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+  .tag{position:relative;background:var(--tag);border:1px solid var(--line);padding:20px 18px 16px;
+    display:flex;flex-direction:column;gap:10px;min-height:104px;animation:rise .35s ease both}
+  .tag::before{content:"";position:absolute;top:13px;left:13px;width:11px;height:11px;border-radius:50%;
+    border:1px solid var(--ink-soft);background:var(--paper)}
+  .tag .nm{font-family:"Fraunces",serif;font-weight:400;font-size:25px;line-height:1.05;margin-top:14px}
+  .tag .foot{display:flex;justify-content:space-between;align-items:center;margin-top:auto}
+  .tag .sku{font-family:"Space Mono",monospace;font-size:11px;letter-spacing:.14em;color:var(--ink-soft)}
+  .tag .src{font-family:"Space Mono",monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;
+    padding:2px 6px;border:1px solid var(--line);color:var(--ink-soft)}
+  .tag .src.invent{color:var(--invent);border-color:var(--invent)}
+  .tag{cursor:pointer;user-select:none}
+  .tag:hover{border-color:var(--ink-soft)}
+  .tag.sel{background:var(--paper);border-color:var(--ink)}
+  .tag.sel::before{background:var(--oxblood);border-color:var(--oxblood)}
+  .tag.sel::after{content:"";position:absolute;top:15px;left:17px;width:3px;height:6px;
+    border:solid var(--paper);border-width:0 1.6px 1.6px 0;transform:rotate(43deg)}
+  @keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  @media(prefers-reduced-motion:reduce){.tag{animation:none}}
+
+  .empty{border:1px dashed var(--line);padding:54px 28px;text-align:center;color:var(--ink-soft)}
+  .empty .big{font-family:"Fraunces",serif;font-size:22px;color:var(--ink);margin-bottom:6px}
+  .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--ink);color:var(--paper);font-size:13px;padding:11px 20px;opacity:0;
+    transition:.25s;pointer-events:none;font-family:"Space Mono",monospace;letter-spacing:.04em}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <span class="mark">MANIÈRE DE VOIR</span>
+      <h1>Name Atelier</h1>
+      <span class="sub">Generate product names that are unique, easy to spell and French-leaning — checked against every name already in the range.</span>
+    </div>
+    <div class="meta" id="metaCount">— names on file</div>
+  </header>
+
+  <div class="layout">
+    <div class="rail">
+      <label class="field">
+        <span class="ftag">Category</span>
+        <div class="seg" id="cat">
+          <button data-pool="female" data-sku="WMN" aria-pressed="true">Womens<span class="code">WMN</span></button>
+          <button data-pool="male" data-sku="MAN">Mens<span class="code">MAN</span></button>
+          <button data-pool="unisex" data-sku="UNX">Unisex<span class="code">UNX</span></button>
+          <button data-pool="unisex" data-sku="ACC">Accessories<span class="code">ACC · neutral</span></button>
+        </div>
+      </label>
+
+      <label class="field">
+        <span class="ftag">How many</span>
+        <div class="countrow">
+          <button class="step" id="minus" aria-label="fewer">–</button>
+          <input id="count" type="number" min="1" max="300" value="100" inputmode="numeric">
+          <button class="step" id="plus" aria-label="more">+</button>
+        </div>
+      </label>
+
+      <button class="gen" id="gen">Generate names</button>
+
+      <div class="rule">
+        <b>How it works.</b> Curated French names are used first; once those are exhausted for a batch, the tool invents new French-style names. Every name is rejected if it's <b>70% or more similar</b> to any existing range name — or to another name in the same batch.
+      </div>
+    </div>
+
+    <div class="results">
+      <div class="resbar">
+        <div class="summary" id="summary">Ready when you are.</div>
+        <div class="acts">
+          <button id="all">Select all</button>
+          <button id="copy">Copy for CP</button>
+          <button id="csv">CSV</button>
+        </div>
+      </div>
+      <div class="pickhint" id="pickhint" hidden>Click the names you're taking, then <b>Copy for CP</b> — they land on your clipboard one per line, ready to paste straight down a CP column. Tick nothing to copy the whole batch. <b><span id="selcount">0</span> selected</b></div>
+      <div id="out">
+        <div class="empty">
+          <div class="big">No names yet</div>
+          Pick a category and a quantity, then generate.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const EXISTING = ["aaron","abbie","abel","adam","addison","adele","adeline","adina","adrien","agathe","agnes","aiden","aime","aimee","alain","alanna","alaric","alba","alban","alec","alex","alexis","alice","alima","alix","aliya","alma","almond croissant","alva","ama","amalfi","amance","amani","amaya","ambre","amelie","ameline","americano","amir","amy","anders","andre","andrea","ania","anissa","anne","annelise","annette","anouk","antoine","anton","anya","apple juice","ari","aria","arianne","ariel","arlo","arman","arnault","arsene","arthur","aryel","ash","asher","assia","astrid","aube","aubin","audrey","auguste","aurel","aurelia","aurore","ava","aven","avery","axel","axelle","aya","ayleen","aymeric","azel","azra","azur","bailey","banana milkshake","bastien","baya","beatrice","beau","belina","bella","belle","ben","benoit","bernadette","bernard","bertrand","beryl","billie","blair","blake","blanche","blandine","blank accessories","bonnie","bordeaux","boris","bria","brian","brice","brigitte","briony","brook","brune","cafe latte","calais","cali","calista","camille","cannes","cappuccino","caren","carina","carl","caroline","carter","cartoon t-shirt","casey","cassian","catherine","caya","cecile","cedric","celeste","celia","celie","celine","cenya","chad","chai","chamomile","chantal","charlene","charles","charlie","cheesecake","chris","christa","christelle","christine","cia","claire","clara","claude","claudette","clement","cleo","clovis","coke","colette","colin","conrad","constant","cora","coralie","coraline","corina","cosette","croissant","currency product","cyril","daisy","dakota","dalya","damien","dan","dani","danielle","danika","danya","daphina","daphne","darcy","darel","dario","darlene","david","deborah","delia","delina","delphine","denis","denise","destroyed jeans","deya","diane","didier","diet coke","dimitri","dina","doria","dorian","dory","drew","dylan","earl grey","eden","edena","edgar","edith","eiffel","eleanor","elena","eleni","eli","elina","elio","elise","elle","elliot","elodie","eloise","elon","elora","elsa","elsy","elva","elvy","elya","elyssa","emera","emil","emilie","emma","emy","emya","enora","enzo","eric","esma","espresso","essential t-shirt","estelle","esther","etta","eugenie","evana","evelyn","evie","fabien","fabienne","fae","faith","fanny","fara","faye","felix","fennel tea","ferdinand","fern","fia","fiona","flat white","flavie","flora","florence","florent","florian","florine","four-in-a-row","fred","freya","frida","gabin","gabrielle","gaby","gael","gaia","galia","gaston","georges","gerard","gia","gift cards","gilbert","ginger shot","ginger tea","golden glow","gothic t-shirt","grace","graffiti jeans","graffiti t-shirt","guy","hailey","hana","harley","harper","hazel","hector","helene","henri","holly","hot chocolate","hubert","hugo","iconic t-shirt","idriss","ilona","ilya","ina","ines","inez","ingrid","irene","iris","isa","isaac","isabelle","isya","ivan","ivana","ivanna","ivy","jacinda","jacques","jamie","jana","janelia","jasmine","jean","jeanne","jeans","jena","jessica","jessy","joana","joel","joelle","jonas","jordan","joris","joseph","josette","josiane","josie","joy","juan","julie","julien","juliette","juline","june","justin","kadia","kai","kalia","kalie","kamil","karel","karla","keira","keith","kelsey","kena","keyla","kian","kilian","kristina","l'eiffel t-shirt","lacey","lambert","laure","laurena","laurence","laurent","laya","layton","lazare","lea","leather cardholder","lelia","lena","lenny","leo","leon","leonie","leyna","liam","lila","lilian","lille","lilou","lina","linda","lionel","lior","lira","lise","loane","loic","lola","london","loose jeans","lore","lorette","loris","lou","louis","louise","loula","louna","luc","luca","lucia","luen","lydie","lyon","lyra","lysandra","l\u2019art","l\u2019artiste","l\u2019atelier","madeline","mae","maeva","maia","maisie","malena","malia","malika","maloe","malya","manchester tart","manel","manon","manu","manya","marc","marceau","marcel","margot","marie","marin","mario","marisa","marseille","martial","martine","matcha","mathilda","mathilde","mathis","maude","maura","maurice","maxime","maya","mayla","maylis","melanie","melia","melvin","mercy t-shirt","mesh g-string","michel","michele","mika","mila","milan","milo","mina","mint tea","mira","mirena","mirim","mocha","mona","monaco","monaco t-shirt","monet","monique","morgan","morning greens","mya","myriam","nadine","naela","nassim","nathalie","nathan","nawel","naya","nayla","nelly","new","nico","nicolas","nicole","nina","nino","ninon","nola","nolan","nora","norbert","nostalgia t-shirt","nyc","octave","olia","olivia","olivier","ollie","orange juice","owen","paige","palais","pascal","pascale","patchwork jeans","patricia","pauline","pearl","penny","perrine","picasso t-shirt","pierre","piped t-shirt","piper","pippa","pleated t-shirt","posie","prisca","quilted jeans","rafael","rafaela","rami","rania","raoul","ray","raya","rayan","raymond","rayna","regine","regis","remi","remy","rena","rene","renee","rennes","reuben","rhea","riley","rina","rivoli","robin","roger","roland","romane","romy","ronnie","rosa","rosalie","rose","rosie","roux","rowen","roxana","rudy","rune","ryan","sabine","sadie","saffron","salim","salomon","sam","sami","samia","sandrine","sara","satia","savin","scarlett","sean","sebastien","selena","seren","serge","shana","sia","sibylle","sidney","sierra","sila","silas","simon","simone","sloane","sofia","solan","solange","solel","solene","somme","sonia","sophie","soraya","sparkling water","stallion t-shirt","stephane","still water","suki","sullivan","sunflowers","suzanne","sylvie","tabitha","talia","tara","tatiana","taya","taylor","thalia","thea","theo","therese","thibault","thierry","thomas","tiana","tima","timeo","timo","tina","tom","tony","torin","towelled t-shirt","triple berry","tristan","ugo","una","valen","valentin","valentine","valerie","valeska","vanilla cheesecake","vera","verity","victor","victorin","vince","vincent","violette","vita","viviane","vivien","wax-effect jeans","wendy","wyatt","xander","yani","yara","yolande","yuna","yves","yvette","yvon","zac","zara","zayn","zina","zoe"];
+const POOLS = {"female":["Adrienne","Adèle","Agnès","Albertine","Alienor","Aline","Amaline","Amandine","Amélie","Anaïs","Andréa","Angèle","Annick","Anouck","Apolline","Ariane","Armelle","Aubrée","Aurélie","Aveline","Axelline","Bastienne","Blanchette","Brigide","Brunehilde","Bérangère","Bérénice","Calanthe","Capucine","Carole","Charline","Chloé","Christiane","Clarisse","Clémence","Clémentine","Coline","Colombe","Constance","Coralie","Cordélia","Cyrielle","Cécile","Célestine","Delphine","Diane","Dominique","Domitille","Désirée","Edmée","Eglantine","Eléonore","Estée","Eugénie","Eulalie","Fabienne","Fantine","Fauve","Fleurette","Florentine","Florine","Frédérique","Félicie","Gabriela","Garance","Gaëlle","Geneviève","Ghislaine","Gilberte","Gisèle","Henriette","Hermine","Honorine","Hortense","Huguette","Hélène","Inès","Isaure","Iseline","Iseult","Jacqueline","Janine","Joséphine","Joviette","Justine","Laetitia","Liliane","Lisette","Lorraine","Lucienne","Lucile","Lucinde","Léa","Léane","Léonie","Léontine","Lévana","Madeleine","Magali","Manou","Margaux","Marguerite","Mariette","Marion","Marjorie","Maryline","Mathéa","Maxine","Maylise","Maëlys","Maïté","Mirabelle","Mireille","Morgane","Mylène","Mélaine","Mélina","Mélusine","Mérédith","Nadège","Nathalie","Nicolette","Noéline","Noémie","Noëlle","Océane","Odette","Odile","Ondine","Orlane","Pascaline","Pernelle","Perpétue","Philippine","Pélagie","Pénélope","Reine","Rosaline","Roselyne","Rosine","Roxane","Sabelle","Sandrine","Sidonie","Sixtine","Solène","Sybille","Sylvaine","Sylvianne","Séraphine","Séverine","Sévrine","Thaïs","Théodora","Thérèse","Tiphaine","Valentine","Valérie","Victorine","Violaine","Virginie","Vivienne","Véronique","Yolène","Yseult","Zélie","Zéline","Élise","Émeline","Émilie","Émilienne"],"male":["Achille","Adelin","Aimé","Alban","Albéric","Aldric","Alphonse","Amable","Amaury","Anatole","Andréas","Anselme","Apollinaire","Armand","Aubert","Augustin","Aurèle","Aurélien","Baptiste","Barnabé","Bartholomé","Barthélemy","Basile","Baudouin","Bertin","Blaise","Bohémond","Bonaventure","Briac","Bénédict","Casimir","Clovis","Constantin","Corentin","Cyprien","Célestin","Césaire","Côme","Damase","Dieudonné","Donatien","Désiré","Edmond","Ernest","Eudes","Eugène","Fabrice","Ferdinand","Ferréol","Fiacre","Firmin","Florent","Florentin","Fortuné","Frédéric","Fulbert","Gabriel","Galaad","Gaspard","Gaubert","Gauthier","Gervais","Gildas","Godefroy","Gontran","Grégoire","Guillaume","Gustave","Henri","Hervé","Hippolyte","Honoré","Hyacinthe","Ignace","Isidore","Joachim","Jocelyn","Josselin","Jérôme","Lambert","Liévin","Lothaire","Lubin","Ludovic","Léandre","Léonard","Léopold","Macaire","Mael","Marcel","Marcellin","Marin","Marius","Mathurin","Mathéo","Maxance","Maximilien","Maximin","Merlin","Modeste","Médéric","Nicéphore","Norbert","Noé","Olivier","Oswald","Pacôme","Parfait","Patrice","Philibert","Placide","Prosper","Pélage","Pépin","Quentin","Raphaël","Roland","Romaric","Romuald","Roméo","Régis","Rémy","Salomon","Sidoine","Sylvain","Sébastien","Séraphin","Séverin","Sévère","Tanguy","Thaddée","Thibaut","Théodore","Théophile","Tibère","Tristan","Ulysse","Urbain","Valère","Valéry","Venance","Vianney","Vivien","Wandrille","Xavier","Yann","Yvain","Zéphyrin","Édouard","Éloi","Émile","Émilien","Éphraïm","Éric","Étienne","Évariste"],"unisex":["Adel","Anaël","Andrel","Andréa","Aubin","Aubrey","Azel","Camille","Camélien","Claude","Clovis","Cléo","Cyriel","Céleste","Dominique","Eden","Filou","Gaël","Gwen","Isaure","Joël","Lior","Lou","Loïc","Léal","Marin","Marlou","Maxime","Maël","Maïlo","Mérel","Naël","Noa","Noam","Océan","Réal","Rémi","Réo","Sacha","Solal","Solen","Sterenn","Stéphane","Swann","Sylvie","Sören","Tual","Téo","Valéry","Yann","Yannic","Yaël","Yuna","Zéphir","Élie","Émeryc","Émile"]};
+</script>
+<script>
+(function(){
+  // ---------- helpers ----------
+  function fold(s){return s.normalize("NFKD").replace(/[\u0300-\u036f]/g,"").toLowerCase().trim();}
+  function lev(a,b){
+    if(a===b)return 0; if(!a.length)return b.length; if(!b.length)return a.length;
+    let prev=Array.from({length:b.length+1},(_,i)=>i);
+    for(let i=1;i<=a.length;i++){
+      let cur=[i];
+      for(let j=1;j<=b.length;j++){
+        cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]!==b[j-1]?1:0));
+      }
+      prev=cur;
+    }
+    return prev[b.length];
+  }
+  function ratio(a,b){const m=Math.max(a.length,b.length);return m===0?1:1-lev(a,b)/m;}
+  const THR=0.70;
+  function tooClose(cf,list){for(let i=0;i<list.length;i++){if(ratio(cf,list[i])>=THR)return true;}return false;}
+
+  // existing names as a Set of folded strings for fast exact-check, plus array for ratio scan
+  const EX_ARR = EXISTING;
+
+  // ---------- invented name builder (French-leaning, spellable) ----------
+  const onset=["B","C","Ch","D","F","G","J","L","M","N","P","R","S","T","V","Br","Cl","Fl","Tr","Bl"];
+  const vow=["a","e","i","o","u","ai","au","ou","ie"];
+  const link=["l","r","n","ss","ll","nt","ll",""];
+  const ends={
+    female:["ette","elle","ine","ie","anne","aine","ille","ée","yne","ade","a"],
+    male:["ien","aud","ric","on","el","an","in","ard","ert","ase","ot"],
+    unisex:["el","an","ou","aël","yn","en","is","ane","el"]
+  };
+  function pick(a){return a[Math.floor(Math.random()*a.length)];}
+  function invent(kind){
+    let s=pick(onset)+pick(vow);
+    if(Math.random()<0.4) s+=pick(link);
+    s+=pick(ends[kind]||ends.unisex);
+    return s.charAt(0).toUpperCase()+s.slice(1);
+  }
+  function spellable(name){
+    const f=fold(name);
+    if(f.length<3||f.length>10)return false;
+    if(/(.)\1\1/.test(f))return false;           // no triple letters
+    if(/[aeiou]{3,}/.test(f))return false;        // no 3+ vowel runs
+    if(/[^aeiouy]{4,}/.test(f))return false;      // no 4+ consonant runs
+    if(!/[aeiouy]/.test(f))return false;
+    return true;
+  }
+
+  // ---------- generation ----------
+  function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+  function generate(pool, n){
+    const out=[]; const sel=[];   // sel = folded chosen names
+    // 1. curated survivors first
+    const curated=shuffle(POOLS[pool].slice());
+    for(const name of curated){
+      if(out.length>=n)break;
+      const f=fold(name);
+      if(tooClose(f,EX_ARR))continue;
+      if(tooClose(f,sel))continue;
+      out.push({name,src:"curated"}); sel.push(f);
+    }
+    // 2. invented backup
+    let tries=0, cap=n*600+4000;
+    while(out.length<n && tries<cap){
+      tries++;
+      const cand=invent(pool);
+      if(!spellable(cand))continue;
+      const f=fold(cand);
+      if(tooClose(f,EX_ARR))continue;
+      if(tooClose(f,sel))continue;
+      out.push({name:cand,src:"invented"}); sel.push(f);
+    }
+    return out;
+  }
+
+  // ---------- UI ----------
+  const catBox=document.getElementById("cat");
+  const countEl=document.getElementById("count");
+  const out=document.getElementById("out");
+  const summary=document.getElementById("summary");
+  let current=[]; let curSku="WMN"; let selected=new Set();
+
+  catBox.addEventListener("click",e=>{
+    const b=e.target.closest("button"); if(!b)return;
+    [...catBox.children].forEach(x=>x.setAttribute("aria-pressed", x===b?"true":"false"));
+  });
+  function activeBtn(){return catBox.querySelector('[aria-pressed="true"]');}
+  document.getElementById("plus").onclick=()=>countEl.value=Math.min(300,(+countEl.value||0)+10);
+  document.getElementById("minus").onclick=()=>countEl.value=Math.max(1,(+countEl.value||0)-10);
+
+  document.getElementById("metaCount").textContent = EX_ARR.length.toLocaleString()+" names on file";
+
+  function toast(msg){const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1600);}
+
+  function updateSel(){
+    const sc=document.getElementById("selcount"); if(sc)sc.textContent=selected.size;
+    const allBtn=document.getElementById("all");
+    if(allBtn)allBtn.textContent=(current.length&&selected.size===current.length)?"Clear":"Select all";
+  }
+  function chosen(){return selected.size?current.filter((_,i)=>selected.has(i)):current;}
+
+  function render(list){
+    selected=new Set();
+    const hint=document.getElementById("pickhint");
+    if(!list.length){if(hint)hint.hidden=true;out.innerHTML='<div class="empty"><div class="big">Nothing generated</div>Try a different category or fewer names.</div>';updateSel();return;}
+    if(hint)hint.hidden=false;
+    const frag=document.createElement("div"); frag.className="grid";
+    list.forEach((it,i)=>{
+      const d=document.createElement("div"); d.className="tag"; d.dataset.i=i; d.style.animationDelay=(Math.min(i,40)*0.012)+"s";
+      d.innerHTML='<div class="nm"></div><div class="foot"><span class="sku">'+curSku+'</span>'+
+        '<span class="src'+(it.src==="invented"?" invent":"")+'">'+it.src+'</span></div>';
+      d.querySelector(".nm").textContent=it.name;
+      d.addEventListener("click",()=>{
+        const idx=+d.dataset.i;
+        if(selected.has(idx)){selected.delete(idx);d.classList.remove("sel");}
+        else{selected.add(idx);d.classList.add("sel");}
+        updateSel();
+      });
+      frag.appendChild(d);
+    });
+    out.innerHTML=""; out.appendChild(frag); updateSel();
+  }
+
+  document.getElementById("gen").onclick=function(){
+    const btn=this; const b=activeBtn();
+    const pool=b.dataset.pool; curSku=b.dataset.sku;
+    let n=Math.max(1,Math.min(300,parseInt(countEl.value)||1)); countEl.value=n;
+    btn.disabled=true; btn.textContent="Working…";
+    setTimeout(()=>{
+      current=generate(pool,n);
+      const inv=current.filter(x=>x.src==="invented").length;
+      const cur=current.length-inv;
+      summary.innerHTML='<span class="n">'+current.length+'</span> '+curSku+' names · '
+        +cur+' curated · <span class="inv">'+inv+' invented</span>'
+        +(current.length<n?(' · pool capped at '+current.length):'');
+      render(current);
+      btn.disabled=false; btn.textContent="Generate names";
+    },30);
+  };
+
+  document.getElementById("all").onclick=()=>{
+    if(!current.length){toast("Generate first");return;}
+    const tags=out.querySelectorAll(".tag");
+    if(selected.size===current.length){selected.clear();tags.forEach(t=>t.classList.remove("sel"));}
+    else{selected=new Set(current.map((_,i)=>i));tags.forEach(t=>t.classList.add("sel"));}
+    updateSel();
+  };
+  document.getElementById("copy").onclick=()=>{
+    const list=chosen();
+    if(!list.length){toast("Generate first");return;}
+    navigator.clipboard.writeText(list.map(x=>x.name).join("\n")).then(()=>toast("Copied "+list.length+" name"+(list.length>1?"s":"")+" — paste into CP"));
+  };
+  document.getElementById("csv").onclick=()=>{
+    const list=chosen();
+    if(!list.length){toast("Generate first");return;}
+    const rows=[["Name","Category","Source"]].concat(list.map(x=>[x.name,curSku,x.src]));
+    const csv=rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(",")).join("\n");
+    const blob=new Blob([csv],{type:"text/csv"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+    a.download="mdv-names-"+curSku+"-"+list.length+".csv"; a.click();
+    toast("CSV downloaded ("+list.length+")");
+  };
+})();
+</script>
+</body>
+</html>
